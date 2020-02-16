@@ -1,0 +1,105 @@
+
+@keyframes blink {
+    from {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes TopToBottom {
+    from {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+    30% {
+        transform: translate(0, -100px);
+    }
+    to {
+        transform: translate(0, 5000px);
+        opacity: 0;
+    }
+}
+@keyframes BottomToTop {
+    from {
+        transform: translate(0, 5000px);
+    }
+    75% {
+        transform: translate(0, -50px);
+    }
+    to {
+        transform: translate(0, 0);
+    }
+}
+
+@keyframes hideLoader {
+    from {
+        transform: translate(0,0);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(0,0);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-100vh,0);
+        opacity: 0;
+    }
+}
+
+@keyframes catcha {
+    from {
+        right: -100%;
+        left: auto;
+    }
+    0% {
+        right: auto;
+        left: -100%
+    }
+    to {
+        right: auto;
+        left: 100%
+    }
+}
+
+@keyframes disapear {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes gradient-text {
+    to {
+        background-position: 200% center;
+    }
+}
+
+@keyframes goCrazyCookie {
+    from {
+        opacity: 0;
+        transform: translate(0px,0px);
+    }
+    25% {
+        opacity: .5;
+        transform: translate(0px,-6px);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(0px,-12px);
+    }
+    75% {
+        opacity: .5;
+        transform: translate(0px,-18px);
+    }
+    to {
+        opacity: 0;
+        transform: translate(0px,-24px);
+    }
+}

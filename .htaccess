@@ -1,0 +1,24 @@
+RewriteEngine On
+RewriteCond %{HTTPS} !on
+RewriteCond %{REQUEST_URI} !^/[0-9]+\..+\.cpaneldcv$
+RewriteCond %{REQUEST_URI} !^/\.well-known/pki-validation/[A-F0-9]{32}\.txt(?:\ Comodo\ DCV)?$
+RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+ErrorDocument 404 https://matthieuberard.fr/404.html
+ErrorDocument 500 https://matthieuberard.fr/500.html
+# or map them to one error document:
+# ErrorDocument 404 /pages/errors/error_redirect.php
+# ErrorDocument 500 /pages/errors/error_redirect.php
+
+RewriteBase /
+
+RewriteCond %{REQUEST_URI} ^/404/$
+RewriteRule ^(.*)$ /404.html [L]
+
+RewriteCond %{REQUEST_URI} ^/500/$
+RewriteRule ^(.*)$ /500.html [L]
+
+# or map them to one error document:
+#RewriteCond %{REQUEST_URI} ^/404/$ [OR]
+#RewriteCond %{REQUEST_URI} ^/500/$
+#RewriteRule ^(.*)$ /pages/errors/error_redirect.php [L]
