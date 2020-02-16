@@ -2,6 +2,10 @@
 @import 'variables';
 @import 'keyframes';
 
+html, body {
+    overflow: hidden;
+}
+
 body {
     background-color: $grey-darker;
     overflow: hidden;
@@ -145,6 +149,7 @@ body {
                     font-style: italic;
                     user-select: none;
                     font-family: $family-victorMono;
+                    font-size: 14px;
                     transition: all .2s ease;
                 }
             }
@@ -158,13 +163,37 @@ body {
                     height: 15px;
                     border-radius: 50%;
                     background-color: $red;
+                    &::after {
+                        content: "";
+                        position: absolute;
+                        top: 12.5%;
+                        left: 12.5%;
+                        width: 75%;
+                        height: 75%;
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E");
+                        background-size: contain;
+                        background-position: center center;
+                        background-repeat: no-repeat;
+                        opacity: 0;
+                        transition: opacity .25s ease;
+                    }
                     &:nth-child(2) {
                         right: 40px;
                         background-color: $yellow;
+                        &::after {
+                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3C/svg%3E");
+                        }
                     }
                     &:nth-child(3) {
                         right: 65px;
                         background-color: $green;
+                        &::after {
+                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 3 21 3 21 9'%3E%3C/polyline%3E%3Cpolyline points='9 21 3 21 3 15'%3E%3C/polyline%3E%3Cline x1='21' y1='3' x2='14' y2='10'%3E%3C/line%3E%3Cline x1='3' y1='21' x2='10' y2='14'%3E%3C/line%3E%3C/svg%3E");
+                        }
+                    }
+
+                    &:hover::after {
+                        opacity: 1;
                     }
                 }
             }
@@ -359,7 +388,12 @@ body {
                             position: relative;
                             text-decoration: none;
                             font-weight: bold;
+                            margin-left: 10px;
                             font-size: 20px;
+                            display: inline-flex;
+                            justify-content: center;
+                            align-items: center;
+
                             .gradient-text {
                                 font-style: normal;
                                 background: linear-gradient(to right, orange , yellow, green, cyan, blue, violet);
@@ -388,9 +422,6 @@ body {
 
                             &.light-pdf {
                                 display: none;
-                            }
-                            &.dark-pdf {
-                                display: inline-block;
                             }
                         }
                     }
@@ -739,7 +770,7 @@ body {
                         span {
                             a {
                                 &.light-pdf {
-                                    display: inline-block;
+                                    display: inline-flex;
                                 }
                                 &.dark-pdf {
                                     display: none;
@@ -1027,18 +1058,26 @@ body {
 body {
     svg {
         position: absolute;
-        top: calc(50% - (1080px/2));
-        left: calc(50% - (5760px/2));
-        width: 5760px;
-        height: 1080px;
+        //top: calc(50% - (1080px/2));
+        //left: calc(50% - (5760px/2));
+        //width: 5760px;
+        //height: 1080px;
+        top: 0;
+        left: -210vw;
+        height: 100vh;
         #sun-moon {
-            //animation: moonMove 20s linear infinite;
+            offset-path: path('M-1000,-10 C0,25 0,-25 1000,-10');
+            animation: moonMove 20s linear infinite;
         }
 
         #fire-camp {
+            display: block;
+            position: relative;
             path.cls-33 {
                 display: block;
-                animation: fireCamp 2s linear;
+                position: relative;
+                transform-origin: center center;
+                //animation: fireCamp 2s linear;
             }
         }
     }
@@ -1047,43 +1086,37 @@ body {
 @import "_404";
 
 @keyframes moonMove {
-    from { transform: translate(-1000px, 50px); }
-    12.5% { transform: translate(-750px, 40px); }
-    25% { transform: translate(-500px, 15px); }
-    37.5% { transform: translate(-250px, -10px); }
-    50% { transform: translate(0px, -12.5px); }
-    62.5% { transform: translate(250px, -10px); }
-    75% { transform: translate(500px, 15px); }
-    87.5% { transform: translate(750px, 40px); }
-    to { transform: translate(1000px, 50px); }
+    100% {
+        offset-distance: 100%;
+    }
 }
 @keyframes fireCamp {
     from {
-        transform: scale3d(1, 1, 1);
+        transform: skew(15deg, 15deg);
     }
 
     30% {
-        transform: scale3d(1.25, 0.75, 1);
+        transform: skew(25deg, 15deg);
     }
 
     40% {
-        transform: scale3d(0.75, 1.25, 1);
+        transform: skew(15deg, 25deg);
     }
 
     50% {
-        transform: scale3d(1.15, 0.85, 1);
+        transform: skew(45deg, 15deg);
     }
 
     65% {
-        transform: scale3d(0.95, 1.05, 1);
+        transform: skew(15deg, 45deg);
     }
 
     75% {
-        transform: scale3d(1.05, 0.95, 1);
+        transform: skew(25deg, 15deg);
     }
 
     to {
-        transform: scale3d(1, 1, 1);
+        transform: skew(15deg, 15deg);
     }
 }
 //::-webkit-scrollbar-track

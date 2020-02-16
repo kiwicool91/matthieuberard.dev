@@ -1,7 +1,9 @@
 const startTimer = 4000;
 const timer = 35;
-const maintenanceMode = location.hostname === 'matthieuberard.fr' ? true : false;
-const isLocal = location.hostname === 'matthieuberard.fr' ? true : false;
+const isMaintenance = false
+const maintenanceMode = location.hostname === 'matthieuberard.fr' ? false : isMaintenance;
+const isLocal = location.hostname === 'matthieuberard.fr' ? false : true;
+
 let contentLine = '';
 let enableCookie = true;
 let visited = false;
@@ -123,14 +125,13 @@ function stringTransformer(elem, string, baseTimer, emoji = '') {
 
 }
 
-function buildCmd(isVisited = false) {
+function buildCmd() {
     // setTimeout(() => {
     //     $('.main-container-loader').removeClass('show').addClass('hide');
     // },1000);
     // preload img
-    $('<img src=""./dist/img/code.png"/>');
-
-    if (isVisited == 'false') {
+    $('<img src="./dist/img/code.png"/>');
+    if (!visited) {
         setTimeout(() => {
             $('.main-container-cmd').show().removeClass('hide').addClass('show');
         }, 750);
@@ -150,6 +151,8 @@ function buildCmd(isVisited = false) {
         setTimeout(() => {
             $('#background-image-code').css({'background-image': 'url("./dist/img/code.png")'}).show();
         }, 19000);
+
+        Cookies.set('visited', 'true', {expires: 30});
     } else {
         setTimeout(() => {
             $('.main-container-project').show().removeClass('hide').addClass('show');
@@ -165,12 +168,13 @@ function buildCmd(isVisited = false) {
 if (!maintenanceMode) {
 
 } else {
+    console.log('ici')
     $('.main-container-btn').hide();
     $('.main-container-loader').hide();
-    $('.main-container-cmd').hide();
+    $('.main-container-cmd').show().toggleClass('hide').toggleClass('show');
     $('.main-container-project').hide();
-    $('#background-image-code').css({'background-image': 'url("./dist/img/code.png")'}).show();
-    $('.main-container-project').removeClass('hide').addClass('show').show();
+    $('#background-image-code').css({'background-image': 'url("./dist/img/code.png")'}).hide();
+    $('.main-container-project').removeClass('hide').addClass('show').hide();
 }
 
 $('#access-btn').click(function (e) {
