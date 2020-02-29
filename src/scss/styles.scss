@@ -1057,18 +1057,20 @@ body {
 
 body {
     svg {
-        position: absolute;
+        //position: absolute;
         //top: calc(50% - (1080px/2));
         //left: calc(50% - (5760px/2));
         //width: 5760px;
         //height: 1080px;
-        top: 0;
-        left: -210vw;
-        height: 100vh;
-        #sun-moon {
-            offset-path: path('M-1000,-10 C0,25 0,-25 1000,-10');
-            animation: moonMove 20s linear infinite;
-        }
+        //top: 0;
+        //left: -210vw;
+        //height: 100vh;
+        //#moon {
+        //    motion-path: path('M240.775,323.7S645.519,31.2,1046.5,31.2s798.2,292.5,798.2,292.5');
+        //    offset-path: path('M240.775,323.7S645.519,31.2,1046.5,31.2s798.2,292.5,798.2,292.5');
+        //    motion-rotation: reverse;
+        //    animation: moonMove 20s linear infinite;
+        //}
 
         #fire-camp {
             display: block;
@@ -1087,6 +1089,7 @@ body {
 
 @keyframes moonMove {
     100% {
+        motion-offset: 100%;
         offset-distance: 100%;
     }
 }
