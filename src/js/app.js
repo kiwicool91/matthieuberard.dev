@@ -274,3 +274,7 @@ window.addEventListener("wheel", event => {
 //     console.log('variation',e)
 //     return false;
 // });
+
+navigator.serviceWorker.register('mb-sw.js').then(resp => console.info(resp)).catch(err => console.error(err));
+
+console.log(window.navigator.onLine ? "%c🌐" : "%c❌","font-size: 28px");
