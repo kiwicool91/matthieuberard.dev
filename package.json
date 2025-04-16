@@ -17,12 +17,7 @@
   },
   "dependencies": {
     "@mlc-ai/web-llm": "^0.2.78",
-    "aes-js": "^3.1.2",
-    "asn1js": "^3.0.6",
-    "bigint-mod-arith": "^3.3.1",
     "interactjs": "^1.10.27",
-    "js-sha1": "^0.7.0",
-    "pako": "^2.1.0",
     "three": "^0.175.0"
   }
 }
