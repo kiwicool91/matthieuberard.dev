@@ -1054,7 +1054,8 @@ button {
   .taskbar__container--actions {
     gap: 0;
     max-width: 100%;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 }
 
