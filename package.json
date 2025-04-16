@@ -1,0 +1,28 @@
+{
+  "name": "matthieuberard.dev",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "homepage": "https://kiwicool91.github.io/matthieuberard.dev/",
+  "devDependencies": {
+    "gh-pages": "^6.3.0",
+    "vite": "^6.2.0"
+  },
+  "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.78",
+    "aes-js": "^3.1.2",
+    "asn1js": "^3.0.6",
+    "bigint-mod-arith": "^3.3.1",
+    "interactjs": "^1.10.27",
+    "js-sha1": "^0.7.0",
+    "pako": "^2.1.0",
+    "three": "^0.175.0"
+  }
+}
