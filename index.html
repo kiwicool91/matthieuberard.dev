@@ -560,8 +560,11 @@
             </div>
             <div class="window__divider"></div>
             <div class="window__content window__content--video">
-              <video class="window__content-video" loop width="640" height="360">
-                <source src="./src/videos/rickRolled.mp4" type="video/mp4" />
+              <video class="window__content-video" playsinline loop>
+                <source src="./src/videos/rickRolled-h265.mp4" type="video/mp4; codecs=hev1" />
+                <source src="./src/videos/rickRolled-h264.mp4" type="video/mp4" />
+                <source src="./src/videos/rickRolled-mobile.webm" type="video/webm" />
+                Votre navigateur ne supporte pas la vidéo.
               </video>
             </div>
           </div>
@@ -822,8 +825,8 @@
       </section>
     </main>
 
-    <audio class="ambiant-sound" class="hide" loop>
-      <source src="/src/videos/minecraft.mp4" type="audio/mpeg" />
+    <audio class="ambiant-sound hide" loop playsinline>
+      <source src="/src/videos/minecraft.mp3" type="audio/mpeg" />
     </audio>
 
     <svg id="sprite" class="show-for-sr" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">

@@ -167,6 +167,7 @@ html {
 }
 
 body {
+  -webkit-tap-highlight-color: transparent;
   width: 100dvw;
   height: 100dvh;
   overflow: hidden;
@@ -595,6 +596,7 @@ button {
   width: 100%;
   display: block;
   height: 100%;
+  object-fit: cover;
 }
 
 .window__content-header {

@@ -3,7 +3,7 @@ import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeom
 import interact from "interactjs";
 import * as webllm from "@mlc-ai/web-llm";
 
-const isDebug = false;
+const isDebug = import.meta.env.DEV;
 
 const progressSentences = ["Remplissage du mug de café ☕️", "Ajout des lunettes sur le nez 👓", "Ouverture de l'éditeur de texte 📝", "Branchement du cerveau en cours 🧠", "Chargement de la créativité 🎨", "Alignement des pixels parfaits 📐", "Connexion au mode développeur 💻", "Synchronisation avec le café du jour ☕️", "Compilation de la motivation 🔧", "Ouverture de la console 🎛️", "Recherche de la page 404 🔍", "Recherche des paquets perdus 🔍"];
 let availableProgressSentences = [...progressSentences];
@@ -290,8 +290,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function playWithFade(audio, duration = 2000) {
     audio.volume = 0;
-    audio.play();
-    document.body.classList.add("body--audio-playing");
+    audio.play().catch((e) => console.warn("play error", e));
     const interval = 50;
     const step = interval / duration;
     const timer = setInterval(() => {
@@ -308,7 +307,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (audio.volume === 0) {
         clearInterval(timer);
         audio.pause();
-        document.body.classList.remove("body--audio-playing");
       }
     }, interval);
   }
@@ -328,11 +326,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   ambiantSoundEl.addEventListener(
     "change",
     () => {
-      isAmbiantSoundPlaying = !isAmbiantSoundPlaying;
+      isAmbiantSoundPlaying = ambiantSoundEl.checked;
       if (isAmbiantSoundPlaying) {
-        playWithFade(ambiantSoundPlayer, 1500);
+        if (isMobile) {
+          ambiantSoundPlayer.play();
+          document.body.classList.add("body--audio-playing");
+        } else {
+          playWithFade(ambiantSoundPlayer, 1500);
+          document.body.classList.add("body--audio-playing");
+        }
       } else {
-        pauseWithFade(ambiantSoundPlayer, 1000);
+        if (isMobile) {
+          ambiantSoundPlayer.pause();
+          document.body.classList.remove("body--audio-playing");
+        } else {
+          pauseWithFade(ambiantSoundPlayer, 1000);
+          setTimeout(() => {
+            document.body.classList.remove("body--audio-playing");
+          }, 1000);
+        }
       }
       console.log("isAmbiantSoundPlaying", isAmbiantSoundPlaying);
     },
@@ -403,6 +415,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     canvas.addEventListener("mouseleave", () => {
+      isDrawing = false;
+    });
+
+    canvas.addEventListener(
+      "touchstart",
+      (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        isDrawing = true;
+        ctx.beginPath();
+        ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+      },
+      { passive: false }
+    );
+
+    canvas.addEventListener(
+      "touchmove",
+      (e) => {
+        e.preventDefault();
+        if (!isDrawing) return;
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        ctx.strokeStyle = tool === "eraser" ? "#fff" : colorPicker.value;
+        ctx.lineWidth = sizePicker.value;
+        ctx.lineCap = "round";
+        ctx.stroke();
+      },
+      { passive: false }
+    );
+
+    canvas.addEventListener("touchend", () => {
       isDrawing = false;
     });
 
@@ -529,10 +574,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       setTimeout(() => {
         if (id === "window-dont-press-button") {
-          pauseWithFade(windowEl.querySelector(".window__content-video"), 500);
-          setTimeout(() => {
-            windowEl.querySelector(".window__content-video").currentTime = 0;
-          }, 500);
+          const videoEl = windowEl.querySelector(".window__content-video");
+          if (isMobile) {
+            setTimeout(() => {
+              videoEl.currentTime = 0;
+              videoEl.pause();
+            }, 200);
+          } else {
+            pauseWithFade(videoEl, 500);
+            setTimeout(() => {
+              videoEl.currentTime = 0;
+              videoEl.pause();
+            }, 500);
+          }
         }
         if (id === "window-browser") {
           windowEl.querySelector(".window__content-iframe").setAttribute("src", "");
