@@ -442,6 +442,7 @@ button {
   transform: translate(-50%, 0);
   opacity: 0;
   padding: var(--spacer_2) var(--spacer_2) 0 var(--spacer_2);
+  z-index: 1;
 }
 
 .windows--visible {
@@ -556,6 +557,17 @@ button {
 .window__action:hover {
   color: var(--purple_button);
 }
+
+.window__action--close:hover {
+  color: #ff544d;
+}
+.window__action--minimize:hover {
+  color: #feb429;
+}
+.window__action--maximize:hover {
+  color: #24c138;
+}
+
 .window__header-icon,
 .window__action-icon {
   width: 1.6rem;
@@ -838,6 +850,9 @@ button {
   color: var(--text_color);
   opacity: 0;
   margin-bottom: var(--margin_bottom, -48px);
+  transition:
+    background-color var(--default_transition),
+    color var(--default_transition);
 }
 
 .chat__item--visible {
@@ -1029,6 +1044,7 @@ button {
   box-shadow: inset 0 0 0 2px var(--text_color);
   background-color: var(--background_color);
   transform: translateY(100%);
+  z-index: 1;
 }
 @media (max-width: 600px) {
   .taskbar {
@@ -1198,4 +1214,111 @@ button {
 #minecraft-game {
   appearance: none;
   border: 0;
+}
+
+/* contextual menu */
+.contextual-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: var(--background_color);
+  box-shadow: inset 0 0 0 2px var(--text_color);
+  color: var(--text_color);
+  display: grid;
+  grid-template-rows: 0fr;
+  z-index: 100;
+  transition: grid-template-rows var(--default_transition);
+}
+
+.contextual-menu--visible {
+  grid-template-rows: 1fr;
+}
+
+.contextual-menu__container {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.contextual-menu__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer_8);
+  padding: var(--spacer_12) var(--spacer_16);
+}
+
+.contextual-menu__item--spacer {
+  display: block;
+  width: 100%;
+  background-color: var(--text_color);
+  height: 1px;
+  opacity: 0.5;
+}
+
+.contextual-menu__link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacer_8);
+  transition:
+    background-color var(--default_transition),
+    color var(--default_transition);
+}
+
+.terminal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer_8);
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.terminal__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacer_8);
+}
+
+.terminal__item::before {
+  content: "> ";
+  display: content;
+  color: var(--text_color);
+  font: inherit;
+}
+
+.terminal__input {
+  width: fit-content;
+  appearance: none;
+  background-color: transparent;
+  color: var(--text_color);
+  padding: 0;
+  border: 0;
+}
+.terminal__input:focus {
+  outline: 0;
+}
+
+.wipe__overlay {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 10px);
+  grid-auto-rows: 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.wipe__square {
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--text_color);
+  opacity: 0;
+  transition: opacity var(--slow_transition) var(--delay, 0s);
+}
+
+.wipe__overlay--visible .wipe__square {
+  opacity: 1;
 }

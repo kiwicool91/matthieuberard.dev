@@ -2,11 +2,15 @@ import * as THREE from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry.js";
 import interact from "interactjs";
 import * as webllm from "@mlc-ai/web-llm";
+import gsap from "gsap";
 
 const isDebug = import.meta.env.DEV;
 
 const progressSentences = ["Remplissage du mug de café ☕️", "Ajout des lunettes sur le nez 👓", "Ouverture de l'éditeur de texte 📝", "Branchement du cerveau en cours 🧠", "Chargement de la créativité 🎨", "Alignement des pixels parfaits 📐", "Connexion au mode développeur 💻", "Synchronisation avec le café du jour ☕️", "Compilation de la motivation 🔧", "Ouverture de la console 🎛️", "Recherche de la page 404 🔍", "Recherche des paquets perdus 🔍"];
 let availableProgressSentences = [...progressSentences];
+
+let mouseX = 0;
+let mouseY = 0;
 
 document.addEventListener("DOMContentLoaded", async () => {
   let moebiusTwists = 1;
@@ -269,14 +273,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function animate() {
     requestAnimationFrame(animate);
-    if (backgroundMesh && backgroundMesh.material.opacity < 1) {
-      backgroundMesh.material.opacity = Math.min(backgroundMesh.material.opacity + 0.01, 1);
+    if (backgroundMesh) {
+      if (backgroundMesh.material.opacity < 1) {
+        backgroundMesh.material.opacity = Math.min(backgroundMesh.material.opacity + 0.01, 1);
+      }
+      backgroundMesh.rotation.x += 0.001 + mouseY * 0.003;
+      backgroundMesh.rotation.y += 0.001 + mouseX * 0.003;
     }
-    backgroundMesh.rotation.x += 0.001;
-    backgroundMesh.rotation.y += 0.001;
     renderer.render(scene, camera);
   }
   animate();
+
+  if (!isMobile) {
+    window.addEventListener("mousemove", (e) => {
+      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+    });
+  }
 
   const focusWindow = (windowElement) => {
     const currentZ = parseInt(windowElement.style.zIndex) || 0;
@@ -463,6 +476,91 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  const isWindows = navigator.userAgent.includes("Windows");
+
+  const unixCommands = {
+    pwd: () => "/home/user",
+    ls: () => "Documents\nDownloads\nPictures\nProjects",
+    whoami: () => "user",
+    date: () => new Date().toString(),
+    clear: () => "",
+    fortune: () => "You will use Vim and like it.",
+    sl: () => "You see a steam locomotive running across your terminal!",
+  };
+
+  const windowsCommands = {
+    dir: () => " Volume in drive C is OS\n Directory of C:\\Users\\User\n\nDocuments\nDownloads\nPictures\nProjects",
+    echo: (args) => args.join(" "),
+    cls: () => "",
+    whoami: () => "C:\\Users\\User",
+    date: () => new Date().toString(),
+    help: () => "List of commands: dir, echo, cls, whoami, date, help",
+    starwars: () => "Playing Star Wars Episode IV in ASCII... (not really)",
+  };
+
+  const easterEggs = {
+    "sudo rm -rf /": () => {
+      const wipeDiv = document.createElement("div");
+      wipeDiv.classList.add("wipe__overlay");
+      document.body.prepend(wipeDiv);
+
+      const wipeDivHeight = wipeDiv.getBoundingClientRect().height / 10;
+      const wipeDivWidth = wipeDiv.getBoundingClientRect().width / 10;
+      const wipeDivCollection = [];
+
+      for (let i = 0; i < wipeDivHeight; i++) {
+        for (let i = 0; i < wipeDivWidth; i++) {
+          const square = document.createElement("div");
+          square.classList.add("wipe__square");
+          square.style.setProperty("--delay", `${Math.random() * 2}s`);
+
+          wipeDivCollection.push(square);
+
+          wipeDiv.appendChild(square);
+        }
+      }
+
+      setTimeout(() => {
+        wipeDiv.classList.add("wipe__overlay--visible");
+      }, 500);
+
+      return `Suppression en cours<span class="processing">...</span>`;
+    },
+    fall: () => {
+      document.querySelectorAll(".window, .window__shortcut, .taskbar").forEach((el) => {
+        const rect = el.getBoundingClientRect();
+
+        gsap.set(el, {
+          position: "absolute",
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+          margin: 0,
+        });
+
+        gsap.to(el, {
+          y: window.innerHeight - rect.top - rect.height,
+          rotation: (Math.random() - 0.5) * 120,
+          ease: "bounce.out",
+          duration: 2 + Math.random(),
+        });
+      });
+
+      return `🌪️`;
+    },
+    "hack the planet": () => "HACK THE PLANET!",
+    "make coffee": () => "Error 418: I’m a teapot.",
+  };
+
+  function parseCommand(input) {
+    const [cmd, ...args] = input.trim().split(" ");
+    const cmdMap = isWindows ? windowsCommands : unixCommands;
+    if (easterEggs[input]) return easterEggs[input]();
+    if (cmdMap[cmd]) return typeof cmdMap[cmd] === "function" ? cmdMap[cmd](args) : cmdMap[cmd];
+    return `Command not found: ${cmd}`;
+  }
+
   const openWindow = async (id = null, width = 480, height = 320, url = "", reload = false) => {
     const windowEl = windows[id].el;
     if (windows[id].isOpen) {
@@ -598,6 +696,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (id === "window-game") {
           // windowEl.querySelector("#minecraft-game").remove();
         }
+        if (id === "window-terminal") {
+          terminalLoadingAbort = true;
+          windowEl.querySelector(".terminal__list").innerHTML = "";
+          setTimeout(() => {
+            terminalLoadingAbort = false;
+          }, 500);
+        }
 
         windows[id].isOpen = false;
       }, 200);
@@ -605,6 +710,114 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (id === "window-game" && !windows[id].isOpen) {
       // windowContent.innerHTML = `<iframe id="minecraft-game" style="width: 100%; height: 100%" src="src/games/js-minecraft/index.html" tabindex="0"></iframe>`;
+    }
+
+    if (id === "window-terminal" && !windows[id].isOpen) {
+      const terminal = windowContent.querySelector(".terminal");
+
+      let commandHistory = [];
+      let historyIndex = -1;
+
+      async function bootTerminal() {
+        const terminalItem = document.createElement("li");
+        terminalItem.classList.add("terminal__item");
+        terminalItem.innerHTML = `Démarrage du terminal<span class="processing">...</span>`;
+        terminal.appendChild(terminalItem);
+        await delay(3000);
+        if (terminalLoadingAbort) return;
+        terminalItem.innerHTML = `Démarrage du terminal<svg class="terminal__check" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><use href="#check"></svg>`;
+        await delay(500);
+        if (terminalLoadingAbort) return;
+
+        await delay(1000);
+        if (terminalLoadingAbort) return;
+        createTerminalInput();
+      }
+
+      function createTerminalInput() {
+        const inputItem = document.createElement("li");
+        inputItem.classList.add("terminal__item");
+        const inputField = document.createElement("input");
+        inputField.type = "text";
+        inputField.classList.add("terminal__input");
+        inputItem.appendChild(inputField);
+        terminal.appendChild(inputItem);
+        inputField.focus();
+
+        inputField.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            const command = inputField.value.trim();
+            if (!command) return;
+
+            commandHistory.push(command);
+            historyIndex = commandHistory.length;
+
+            inputItem.remove();
+
+            const commandItem = document.createElement("li");
+            commandItem.classList.add("terminal__item");
+            commandItem.textContent = command;
+            terminal.appendChild(commandItem);
+
+            const responseItem = document.createElement("li");
+            responseItem.classList.add("terminal__item");
+            responseItem.innerHTML = parseCommand(command);
+            terminal.appendChild(responseItem);
+
+            createTerminalInput();
+            responseItem.scrollIntoView({ behavior: "smooth", block: "end" });
+          }
+
+          if (e.key === "ArrowUp") {
+            e.preventDefault();
+            if (historyIndex > 0) {
+              historyIndex--;
+              inputField.value = commandHistory[historyIndex];
+            }
+          }
+
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            if (historyIndex < commandHistory.length - 1) {
+              historyIndex++;
+              inputField.value = commandHistory[historyIndex];
+            } else {
+              historyIndex = commandHistory.length;
+              inputField.value = "";
+            }
+          }
+
+          if (e.ctrlKey && e.key === "c") {
+            e.preventDefault();
+            inputField.value += "^C";
+            inputField.disabled = true;
+            inputField.classList.add("terminal__input--disabled");
+            const interruptItem = document.createElement("li");
+            interruptItem.classList.add("terminal__item");
+            interruptItem.textContent = "Commande interrompue.";
+            terminal.appendChild(interruptItem);
+            createTerminalInput();
+            interruptItem.scrollIntoView({ behavior: "smooth", block: "end" });
+          }
+
+          if (e.ctrlKey && (e.key === "l" || e.key === "L")) {
+            e.preventDefault();
+            terminal.innerHTML = "";
+            createTerminalInput();
+          }
+        });
+
+        document.addEventListener("click", (e) => {
+          if (e.target.closest("#window-terminal") && !e.target.closest(".terminal__input")) {
+            inputField.focus();
+          }
+        });
+      }
+
+      let terminalLoadingAbort = false;
+
+      bootTerminal();
     }
 
     windowEl.querySelector(".window__action--minimize").addEventListener("click", () => {
@@ -771,6 +984,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   dontPressButton.addEventListener("click", () => {
     openWindow("window-dont-press-button", 660, 418);
   });
+
+  const contextualMenu = document.querySelector(".contextual-menu");
+  if (contextualMenu) {
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      const x = e.clientX;
+      const y = e.clientY;
+      contextualMenu.style.left = `${x}px`;
+      contextualMenu.style.top = `${y}px`;
+      contextualMenu.classList.add("contextual-menu--visible");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (contextualMenu.classList.contains("contextual-menu--visible")) {
+        const isClickInside = contextualMenu.contains(e.target);
+        if (!isClickInside) {
+          contextualMenu.classList.remove("contextual-menu--visible");
+        }
+      }
+    });
+
+    const contextualMenuItems = contextualMenu.querySelectorAll(".contextual-menu__item");
+    contextualMenuItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        contextualMenu.classList.remove("contextual-menu--visible");
+      });
+    });
+  }
 });
 
 window.addEventListener("error", (e) => {
