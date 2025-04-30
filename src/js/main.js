@@ -133,6 +133,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
   taskBarNightorDay(taskBarWeatherEl);
 
+  const weatherInterval = setInterval(() => {
+    taskBarNightorDay(taskBarWeatherEl);
+  }, 1000);
+
   await delay(isDebug ? 100 : isFirstVisitStatus ? 200 : 500);
   document.body.classList.add("loading"); // show progress bar
 
@@ -387,6 +391,27 @@ document.addEventListener("DOMContentLoaded", async () => {
         openWindow("window-browser", "max", "max", refLink.dataset.href, true);
       }
     });
+
+    const tooltip = refLink.querySelector(".ref__link-tooltip");
+    if (tooltip) {
+      const refLinkPos = refLink.getBoundingClientRect();
+      const newTooltip = tooltip.cloneNode(true);
+
+      document.body.appendChild(newTooltip);
+
+      refLink.addEventListener("mouseenter", () => {
+        newTooltip.classList.add("ref__link-tooltip--visible");
+      });
+
+      refLink.addEventListener("mouseleave", () => {
+        newTooltip.classList.remove("ref__link-tooltip--visible");
+      });
+
+      refLink.addEventListener("mousemove", (e) => {
+        newTooltip.style.top = `${e.clientY + 22}px`;
+        newTooltip.style.left = `${e.clientX + 12}px`;
+      });
+    }
   });
 
   const paintEl = document.querySelector(".paint");
@@ -504,8 +529,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       wipeDiv.classList.add("wipe__overlay");
       document.body.prepend(wipeDiv);
 
-      const wipeDivHeight = wipeDiv.getBoundingClientRect().height / 10;
-      const wipeDivWidth = wipeDiv.getBoundingClientRect().width / 10;
+      const wipeDivHeight = wipeDiv.getBoundingClientRect().height / 30;
+      const wipeDivWidth = wipeDiv.getBoundingClientRect().width / 30;
       const wipeDivCollection = [];
 
       for (let i = 0; i < wipeDivHeight; i++) {
@@ -1021,3 +1046,78 @@ window.addEventListener("error", (e) => {
 window.addEventListener("unhandledrejection", (e) => {
   console.error("Promesse rejetée sans catch :", e.reason);
 });
+
+let screensaverActive = false;
+let screensaverTimeout;
+
+function moveHelloWorld() {
+  const el = document.querySelector(".screensaver p");
+  const parent = document.querySelector(".screensaver");
+
+  const maxX = parent.clientWidth - el.offsetWidth;
+  const maxY = parent.clientHeight - el.offsetHeight;
+
+  let x = Math.random() * maxX;
+  let y = Math.random() * maxY;
+  let vx = 0.75;
+  let vy = 0.75;
+
+  function animate() {
+    x += vx;
+    y += vy;
+
+    if (x <= 0 || x >= maxX) vx *= -1;
+    if (y <= 0 || y >= maxY) vy *= -1;
+
+    gsap.set(el, { x, y });
+
+    if (screensaverActive) requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+function activateScreensaver() {
+  if (screensaverActive) return;
+  screensaverActive = true;
+  const el = document.querySelector(".screensaver");
+  el.style.display = "block";
+  gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 1 });
+  moveHelloWorld();
+}
+
+function deactivateScreensaver() {
+  if (!screensaverActive) return;
+  screensaverActive = false;
+  const el = document.querySelector(".screensaver");
+  gsap.to(el, {
+    opacity: 0,
+    duration: 1,
+    onComplete: () => {
+      el.style.display = "none";
+    },
+  });
+}
+
+function resetScreensaverTimer() {
+  clearTimeout(screensaverTimeout);
+  if (screensaverActive) deactivateScreensaver();
+  screensaverTimeout = setTimeout(activateScreensaver, 5 * 60 * 1000); // display au bout de 5min
+}
+
+["mousemove", "keydown", "mousedown", "touchstart"].forEach((evt) => {
+  document.addEventListener(evt, resetScreensaverTimer, { passive: true });
+});
+resetScreensaverTimer();
+
+function changePP() {
+  const ppEl = document.querySelector(".window__content-header-pp");
+  if (ppEl) {
+    // changer la pp en fonction de l'heure
+    // du lundi au vendredi
+    //
+    // en fonction du jour
+  }
+}
+
+changePP();

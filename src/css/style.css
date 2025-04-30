@@ -617,11 +617,6 @@ button {
   align-items: center;
 }
 
-.window__content-header-pp {
-  width: 14rem;
-  height: auto;
-  object-fit: contain;
-}
 .window__content-header-text {
   padding-top: var(--spacer_24);
 }
@@ -720,8 +715,20 @@ button {
   gap: var(--spacer_4);
 }
 
+.timeline__subitem-cie {
+  font-weight: var(--font_weight_600);
+}
+
 .timeline__subitem-desc {
   font-size: var(--font_size_12);
+  margin-bottom: var(--spacer_4);
+  padding-right: var(--spacer_16);
+  text-wrap: balance;
+}
+@media (max-width: 600px) {
+  .timeline__subitem-desc {
+    padding-right: var(--spacer_8);
+  }
 }
 
 .window__content-list {
@@ -1030,6 +1037,31 @@ button {
   line-height: 1.2;
 }
 
+.ref__link-tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--background_color);
+  color: var(--text_color);
+  padding: var(--spacer_6) var(--spacer_8);
+  border-radius: var(--border_radius_4);
+  font-size: var(--font_size_12);
+  width: auto;
+  max-width: 18rem;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: inset 0 0 0 2px var(--text_color);
+  transition:
+    color var(--default_transition),
+    background-color var(--default_transition),
+    box-shadow var(--default_transition);
+}
+
+.ref__link-tooltip--visible {
+  opacity: 1;
+}
+
 .taskbar {
   position: absolute;
   bottom: 0;
@@ -1300,8 +1332,8 @@ button {
 
 .wipe__overlay {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 10px);
-  grid-auto-rows: 10px;
+  grid-template-columns: repeat(auto-fill, 3rem);
+  grid-auto-rows: 3rem;
   position: fixed;
   top: 0;
   left: 0;
@@ -1312,8 +1344,8 @@ button {
 }
 
 .wipe__square {
-  width: 1rem;
-  height: 1rem;
+  width: 3rem;
+  height: 3rem;
   background-color: var(--text_color);
   opacity: 0;
   transition: opacity var(--slow_transition) var(--delay, 0s);
@@ -1321,4 +1353,22 @@ button {
 
 .wipe__overlay--visible .wipe__square {
   opacity: 1;
+}
+
+.screensaver {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background-color: var(--black_background);
+}
+
+.screensaver p {
+  display: inline-block;
+  margin-bottom: 0;
+  font-size: 8rem;
+  font-weight: var(--font_weight_700);
 }
