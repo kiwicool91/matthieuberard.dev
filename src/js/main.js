@@ -1112,12 +1112,28 @@ resetScreensaverTimer();
 
 function changePP() {
   const ppEl = document.querySelector(".window__content-header-pp");
-  if (ppEl) {
-    // changer la pp en fonction de l'heure
-    // du lundi au vendredi
-    //
-    // en fonction du jour
+  if (!ppEl) return;
+
+  const now = new Date();
+  const day = now.getDay(); // 0 = dimanche, 6 = samedi
+  const hour = now.getHours();
+  const minutes = now.getMinutes();
+
+  let src = "profil_01.svg";
+
+  const isWeekend = day === 0 || day === 6;
+  const isWorkHour = day >= 1 && day <= 5 && hour >= 9 && hour < 18;
+  const isPause = isWorkHour && hour % 2 === 0 && minutes < 20;
+
+  if (isWeekend) {
+    src = "profil_03.svg" || "profil_02.svg";
+  } else if (isPause) {
+    src = "profil_01.svg";
+  } else if (isWorkHour) {
+    src = "profil_04.svg";
   }
+
+  ppEl.setAttribute("src", `src/images/${src}`);
 }
 
 changePP();
