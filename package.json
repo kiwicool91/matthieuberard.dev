@@ -13,7 +13,7 @@
   "homepage": "https://kiwicool91.github.io/matthieuberard.dev/",
   "devDependencies": {
     "gh-pages": "^6.3.0",
-    "vite": "^6.2.0",
+    "vite": "^6.2.7",
     "vite-plugin-pug": "^0.4.1"
   },
   "dependencies": {
