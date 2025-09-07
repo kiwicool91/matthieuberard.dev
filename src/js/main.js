@@ -1,19 +1,18 @@
-import * as THREE from "three";
-import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry.js";
 import interact from "interactjs";
 import * as webllm from "@mlc-ai/web-llm";
 import gsap from "gsap";
+import { initDrumMachine } from "./modules/drum808.js";
+import { initBackground } from "./modules/background3d.js";
+import { initScreensaver } from "./modules/screensaver.js";
+import { initPaint } from "./modules/paint.js";
+import { initSnake } from "./games/snake.js";
 
 const isDebug = import.meta.env.DEV;
 
 const progressSentences = ["Remplissage du mug de café ☕️", "Ajout des lunettes sur le nez 👓", "Ouverture de l'éditeur de texte 📝", "Branchement du cerveau en cours 🧠", "Chargement de la créativité 🎨", "Alignement des pixels parfaits 📐", "Connexion au mode développeur 💻", "Synchronisation avec le café du jour ☕️", "Compilation de la motivation 🔧", "Ouverture de la console 🎛️", "Recherche de la page 404 🔍", "Recherche des paquets perdus 🔍"];
 let availableProgressSentences = [...progressSentences];
 
-let mouseX = 0;
-let mouseY = 0;
-
 document.addEventListener("DOMContentLoaded", async () => {
-  let moebiusTwists = 1;
   const progressBar = document.querySelector(".progress__bar");
   const progressMessage = document.querySelector(".progress__message");
   const windowEl = document.querySelector(".windows");
@@ -44,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function initChatLLM(statusElement) {
     const engine = new webllm.MLCEngine();
     await engine.setInitProgressCallback((report) => {
-      console.log("initializing", report.text);
+      // console.log("initializing", report.text);
       if (statusElement) {
         statusElement.innerHTML = `<span class="chat__item-text">${report.text}</span><span class="processing">...</span>`;
       }
@@ -92,7 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const delay = (ms) =>
     new Promise((res) => {
-      console.log(ms);
+      // console.log(ms);
       setTimeout(res, ms);
     });
 
@@ -158,142 +157,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   taskBar.classList.add("taskbar--visible");
   windowEl.classList.add("windows--visible");
 
-  // 3D Scene
-  const container = document.querySelector(".ddd-scene");
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-  camera.position.z = 3;
-
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  container.appendChild(renderer.domElement);
-
-  function moebius(u, v, target) {
-    const U = u * Math.PI * 2 * moebiusTwists;
-    const V = (v - 0.5) * 2;
-    const x = (1 + (V / 2) * Math.cos(U / 2)) * Math.cos(U);
-    const y = (1 + (V / 2) * Math.cos(U / 2)) * Math.sin(U);
-    const z = (V / 2) * Math.sin(U / 2);
-    const scale = isMobile ? 0.5 : 1;
-    target.set(x * scale, y * scale, z * scale);
-  }
-
-  function klein(u, v, target) {
-    u *= Math.PI * 2;
-    v *= 2 * Math.PI;
-    let x = (2 + Math.cos(u) * Math.sin(v) - (Math.sin(u) * Math.sin(2 * v)) / 2) * Math.cos(u);
-    let y = (2 + Math.cos(u) * Math.sin(v) - (Math.sin(u) * Math.sin(2 * v)) / 2) * Math.sin(u);
-    let z = Math.sin(u) * Math.sin(v) + (Math.cos(u) * Math.sin(2 * v)) / 2;
-    const scale = isMobile ? 0.3 : 0.5;
-    target.set(x * scale, y * scale, z * scale);
-  }
-
-  function enneper(u, v, target) {
-    u = u * 4 - 2;
-    v = v * 4 - 2;
-    let x = u - (u * u * u) / 3 + u * v * v;
-    let y = v - (v * v * v) / 3 + v * u * u;
-    let z = u * u - v * v;
-    const scale = isMobile ? 0.1 : 0.2;
-    target.set(x * scale, y * scale, z * scale);
-  }
-
-  // Nouveau code pour la génération dynamique de l'arrière plan avec transformation
-  let backgroundMesh = null;
-
-  function transitionBackgroundMesh(shapeFunction) {
-    const segmentsU = 100,
-      segmentsV = 50;
-    // Si aucun mesh n'est présent, créer directement le mesh
-    if (!backgroundMesh) {
-      const geometry = new ParametricGeometry(shapeFunction, segmentsU, segmentsV);
-      const material = isLightMode ? new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0, color: 0xffffff }) : new THREE.MeshNormalMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0 });
-      backgroundMesh = new THREE.Mesh(geometry, material);
-      scene.add(backgroundMesh);
-      return;
-    }
-    const duration = 2000; // Durée de la transformation en ms
-    const startTime = performance.now();
-    // Génère la géométrie cible avec la même résolution
-    const targetGeometry = new ParametricGeometry(shapeFunction, segmentsU, segmentsV);
-    const targetMaterial = isLightMode ? new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, transparent: true, opacity: backgroundMesh.material.opacity, color: 0xffffff }) : new THREE.MeshNormalMaterial({ side: THREE.DoubleSide, transparent: true, opacity: backgroundMesh.material.opacity });
-
-    // En cas de mode light, sauvegarde la couleur initiale
-    const initialColor = isLightMode && backgroundMesh.material.color ? backgroundMesh.material.color.clone() : null;
-
-    const targetPositions = targetGeometry.attributes.position.array;
-    const currentGeometry = backgroundMesh.geometry;
-    const currentPositions = currentGeometry.attributes.position.array;
-    // Si le nombre de points ne correspond pas, on recrée le mesh directement
-    if (currentPositions.length !== targetPositions.length) {
-      scene.remove(backgroundMesh);
-      backgroundMesh = new THREE.Mesh(targetGeometry, targetMaterial);
-      scene.add(backgroundMesh);
-      return;
-    }
-
-    function animateMorph() {
-      const elapsed = performance.now() - startTime;
-      const t = Math.min(elapsed / duration, 1);
-      for (let i = 0; i < currentPositions.length; i++) {
-        currentPositions[i] = currentPositions[i] * (1 - t) + targetPositions[i] * t;
-      }
-      currentGeometry.attributes.position.needsUpdate = true;
-      // Interpolation de la couleur en mode light
-      if (isLightMode && initialColor) {
-        backgroundMesh.material.color.copy(initialColor).lerp(targetMaterial.color, t);
-      }
-      if (t < 1) {
-        requestAnimationFrame(animateMorph);
-      } else {
-        // Transformation terminée : on remplace la géométrie et le matériau par les nouveaux
-        backgroundMesh.geometry.dispose();
-        backgroundMesh.geometry = targetGeometry;
-        backgroundMesh.material.dispose();
-        backgroundMesh.material = targetMaterial;
-      }
-    }
-    animateMorph();
-  }
-
-  const backgroundShapes = {
-    moebius: moebius,
-    klein: klein,
-    enneper: enneper,
-  };
-
-  let initialShape = "moebius";
-  const bgSelect = document.querySelector("#background-shape");
-  if (bgSelect) {
-    initialShape = bgSelect.value;
-  }
-  transitionBackgroundMesh(backgroundShapes[initialShape]);
-
-  window.addEventListener("resize", () => {
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    if (backgroundMesh) {
-      if (backgroundMesh.material.opacity < 1) {
-        backgroundMesh.material.opacity = Math.min(backgroundMesh.material.opacity + 0.01, 1);
-      }
-      backgroundMesh.rotation.x += 0.001 + mouseY * 0.003;
-      backgroundMesh.rotation.y += 0.001 + mouseX * 0.003;
-    }
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  if (!isMobile) {
-    window.addEventListener("mousemove", (e) => {
-      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-      mouseY = (e.clientY / window.innerHeight) * 2 - 1;
-    });
-  }
+  // 3D Background module
+  const bg = initBackground({ isMobile, isLightMode });
 
   const focusWindow = (windowElement) => {
     const currentZ = parseInt(windowElement.style.zIndex) || 0;
@@ -334,7 +199,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     () => {
       isLightMode = !isLightMode;
       document.body.classList.toggle("body--light");
-      console.log("isLightMode", isLightMode);
+      try {
+        bg.setLightMode(isLightMode);
+      } catch {}
+      // console.log("isLightMode", isLightMode);
     },
     false
   );
@@ -363,24 +231,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           }, 1000);
         }
       }
-      console.log("isAmbiantSoundPlaying", isAmbiantSoundPlaying);
+      // console.log("isAmbiantSoundPlaying", isAmbiantSoundPlaying);
     },
     false
   );
 
-  const bgSelectElem = document.querySelector("#background-shape");
-  if (bgSelectElem) {
-    bgSelectElem.addEventListener("change", () => {
-      const selectedValue = bgSelectElem.value;
-      transitionBackgroundMesh(backgroundShapes[selectedValue]);
-    });
-  }
-  if (bgSelectElem) {
-    bgSelectElem.addEventListener("change", () => {
-      const selectedValue = bgSelectElem.value;
-      transitionBackgroundMesh(backgroundShapes[selectedValue]);
-    });
-  }
+  // Background shape select is handled inside background3d module
 
   const refLinks = document.querySelectorAll(".ref__link");
   refLinks.forEach((refLink) => {
@@ -414,103 +270,101 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  const paintEl = document.querySelector(".paint");
-  if (paintEl) {
-    const canvas = paintEl.querySelector(".paint__canvas");
-    const ctx = canvas.getContext("2d");
-    const colorPickerLabel = paintEl.querySelector(".paint__tool--color");
-    const colorPicker = paintEl.querySelector(".paint__color");
-    const sizePicker = paintEl.querySelector(".paint__size");
-    const clearBtn = paintEl.querySelector(".paint__clear");
-    const toolBtns = paintEl.querySelectorAll(".paint__tool");
+  // Game links tooltip (same behavior as refs)
+  const gameLinks = document.querySelectorAll(".game__link");
+  gameLinks.forEach((gameLink) => {
+    const tooltip = gameLink.querySelector(".game__link-tooltip");
+    if (tooltip) {
+      const newTooltip = tooltip.cloneNode(true);
+      document.body.appendChild(newTooltip);
 
-    let isDrawing = false;
-    let tool = "pencil";
-
-    paintEl.dataset.activeTool = tool;
-
-    colorPicker.addEventListener("change", () => {
-      colorPickerLabel.style.setProperty("--picker_color", colorPicker.value);
-    });
-
-    canvas.addEventListener("mousedown", (e) => {
-      isDrawing = true;
-      ctx.beginPath();
-      ctx.moveTo(e.offsetX, e.offsetY);
-    });
-
-    canvas.addEventListener("mousemove", (e) => {
-      if (!isDrawing) return;
-      ctx.lineTo(e.offsetX, e.offsetY);
-      ctx.strokeStyle = tool === "eraser" ? "#fff" : colorPicker.value;
-      ctx.lineWidth = sizePicker.value;
-      ctx.lineCap = "round";
-      ctx.stroke();
-    });
-
-    canvas.addEventListener("mouseup", () => {
-      isDrawing = false;
-    });
-
-    canvas.addEventListener("mouseleave", () => {
-      isDrawing = false;
-    });
-
-    canvas.addEventListener(
-      "touchstart",
-      (e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
-        isDrawing = true;
-        ctx.beginPath();
-        ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-      },
-      { passive: false }
-    );
-
-    canvas.addEventListener(
-      "touchmove",
-      (e) => {
-        e.preventDefault();
-        if (!isDrawing) return;
-        const touch = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
-        ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-        ctx.strokeStyle = tool === "eraser" ? "#fff" : colorPicker.value;
-        ctx.lineWidth = sizePicker.value;
-        ctx.lineCap = "round";
-        ctx.stroke();
-      },
-      { passive: false }
-    );
-
-    canvas.addEventListener("touchend", () => {
-      isDrawing = false;
-    });
-
-    clearBtn.addEventListener("click", () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    });
-
-    toolBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        tool = btn.dataset.tool === "eraser" ? "eraser" : "pencil";
-        paintEl.dataset.activeTool = tool;
+      gameLink.addEventListener("mouseenter", () => {
+        newTooltip.classList.add("game__link-tooltip--visible");
       });
+      gameLink.addEventListener("mouseleave", () => {
+        newTooltip.classList.remove("game__link-tooltip--visible");
+      });
+      gameLink.addEventListener("mousemove", (e) => {
+        newTooltip.style.top = `${e.clientY + 22}px`;
+        newTooltip.style.left = `${e.clientX + 12}px`;
+      });
+    }
+    gameLink.addEventListener("click", () => {
+      const game = gameLink.dataset.game;
+      switch (game) {
+        case "snake":
+          openWindow("window-snake", isMobile ? "max" : 480, isMobile ? "max" : 520);
+          break;
+        default:
+          openWindow("window-game", 660, 418);
+      }
     });
-  }
+  });
+
+  // Paint module
+  initPaint();
 
   const isWindows = navigator.userAgent.includes("Windows");
 
   const unixCommands = {
     pwd: () => "/home/user",
-    ls: () => "Documents\nDownloads\nPictures\nProjects",
+    ls: (args) => (args.length ? `Listing of ${args.join(" ")}:\nfile.txt\nnotes.md\nsrc\n.git` : "Documents\nDownloads\nPictures\nProjects"),
     whoami: () => "user",
     date: () => new Date().toString(),
     clear: () => "",
+    echo: (args) => args.join(" "),
+    uname: (args) => (args.includes("-a") ? "Darwin hostname 23.5.0 Darwin Kernel Version 23.5.0 x86_64" : "Darwin"),
+    hostname: () => "matthieu-mac",
+    pwdx: () => "/home/user", // fun extra
+    cd: (args) => (args[0] ? `Changed directory to ${args[0]}` : "Stayed in /home/user"),
+    cat: (args) => (args.length ? args.map((f) => `----- ${f} -----\nLorem ipsum dolor sit amet...\nEnd of ${f}\n`).join("\n") : "cat: missing file operand"),
+    head: (args) => (args[0] ? `==> ${args[0]} <==\nLine 1\nLine 2\nLine 3\nLine 4\nLine 5` : "head: missing file operand"),
+    tail: (args) => (args[0] ? `==> ${args[0]} <==\nLast 5\nLast 4\nLast 3\nLast 2\nLast 1` : "tail: missing file operand"),
+    grep: (args) => (args.length >= 2 ? `Binary file ${args[1]} matches\n${args[0]}: matched 3 lines` : "usage: grep PATTERN FILE"),
+    find: (args) => `/home/user/Projects/app/index.js\n/home/user/Projects/app/src/main.js\n/home/user/Documents/${args[0] || "readme.md"}`,
+    which: (args) => (args[0] ? `/usr/bin/${args[0]}` : "which: missing command"),
+    whereis: (args) => (args[0] ? `${args[0]}: /usr/bin/${args[0]} /usr/share/man/man1/${args[0]}.1.gz` : "whereis: missing command"),
+    man: (args) => (args[0] ? `${args[0]}(1) — dummy manual page\n${args[0]} does something very useful. (stub)` : "What manual page do you want?"),
+    ps: () => `PID   TTY      TIME CMD\n 1337 ttys000  0:00 node dev\n 1492 ttys001  0:01 bash\n 2048 ttys002  0:00 vim main.js`,
+    top: () => `top - 12:34 up 3 days,  4:12,  3 users,  load average: 0.42, 0.38, 0.35\nPID   COMMAND  %CPU %MEM\n1337  node     12.0  3.2\n1492  bash      0.0  0.1\n2048  vim       0.2  0.3`,
+    kill: (args) => (args[0] ? `Terminated process ${args[0]}` : "kill: usage: kill PID"),
+    mkdir: (args) => (args[0] ? `Created directory '${args[0]}'` : "mkdir: missing operand"),
+    rmdir: (args) => (args[0] ? `Removed directory '${args[0]}'` : "rmdir: missing operand"),
+    touch: (args) => (args.length ? args.map((f) => `Touched '${f}'`).join("\n") : "touch: missing file operand"),
+    rm: (args) => (args.length ? args.map((f) => `Removed '${f}'`).join("\n") : "rm: missing operand"),
+    mv: (args) => (args.length >= 2 ? `Moved '${args[0]}' -> '${args[1]}'` : "mv: missing file operands"),
+    cp: (args) => (args.length >= 2 ? `Copied '${args[0]}' -> '${args[1]}'` : "cp: missing file operands"),
+    chmod: (args) => (args.length >= 2 ? `Mode of '${args[1]}' changed to ${args[0]}` : "chmod: missing operand"),
+    chown: (args) => (args.length >= 2 ? `Owner of '${args[1]}' changed to ${args[0]}` : "chown: missing operand"),
+    df: () => `Filesystem   Size  Used Avail Use% Mounted on\n/dev/disk1  465G  120G  345G  26% /`,
+    du: (args) => `12K ./Documents\n64K ./Downloads\n4.0K ./Pictures\n${args[0] || "."} total: 80K`,
+    env: () => `PATH=/usr/local/bin:/usr/bin:/bin\nHOME=/home/user\nSHELL=/bin/zsh`,
+    export: (args) => (args[0] ? `export ${args[0]} (saved)` : "export: missing argument"),
+    alias: (args) => (args[0] ? `alias ${args[0]} (set)` : "alias ll='ls -alF'\nalias gs='git status'"),
+    unalias: (args) => (args[0] ? `unalias ${args[0]}` : "unalias: usage: unalias name"),
+    uptime: () => `14:22  up 3 days,  4:12,  3 users,  load average: 0.42, 0.38, 0.35`,
+    ifconfig: () => `en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST>\n\tinet 192.168.1.42 netmask 0xffffff00 broadcast 192.168.1.255\n\tether: aa:bb:cc:dd:ee:ff`,
+    ip: (args) => `192.168.1.42/24 dev en0 proto kernel scope link src 192.168.1.42`,
+    ping: (args) => {
+      const host = args[0] || "example.com";
+      return `PING ${host} (93.184.216.34): 56 data bytes\n64 bytes from 93.184.216.34: icmp_seq=0 ttl=57 time=20.1 ms\n64 bytes from 93.184.216.34: icmp_seq=1 ttl=57 time=19.8 ms\n--- ${host} ping statistics ---\n2 packets transmitted, 2 packets received, 0.0% packet loss`;
+    },
+    curl: (args) => {
+      const url = args[0] || "https://example.com";
+      return `HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\n\n<!doctype html><title>Dummy</title><h1>Fetched ${url}</h1>`;
+    },
+    wget: (args) => {
+      const url = args[0] || "https://example.com/file.txt";
+      return `--2025-09-06--  ${url}\nSaving to: 'file.txt'\n'file.txt' saved [1420/1420]`;
+    },
+    less: (args) => (args[0] ? `== ${args[0]} ==\n(less) Press q to quit...\nLorem ipsum...` : "less: missing file operand"),
+    more: (args) => (args[0] ? `== ${args[0]} ==\n(more) Press q to continue...\nLorem ipsum...` : "more: missing file operand"),
+    vi: (args) => `Opening vi ${args[0] || ""} (not really). :q to quit`,
+    vim: (args) => `Opening vim ${args[0] || ""} (not really). :q to quit`,
+    nano: (args) => `Opening nano ${args[0] || ""} (not really). Ctrl+X to exit`,
     fortune: () => "You will use Vim and like it.",
     sl: () => "You see a steam locomotive running across your terminal!",
+    help: () => "Common commands: pwd, ls, cd, cat, echo, head, tail, grep, find, man, ps, top, kill, mkdir, rmdir, touch, rm, mv, cp, chmod, chown, uname, hostname, ifconfig, ip, ping, curl, wget, uptime, df, du, env, export, alias, unalias, which, whereis, less, more, vi, vim, nano, clear, date, whoami, fortune, sl",
   };
 
   const windowsCommands = {
@@ -586,12 +440,491 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `Command not found: ${cmd}`;
   }
 
+  // === TR-808-like Drum Machine ===
+  let drumCtx = null;
+  let drumMaster = null;
+  let drumState = {
+    bpm: 120,
+    swing: 0,
+    isPlaying: false,
+    currentStep: 0,
+    steps: 16,
+    lookahead: 25 / 1000,
+    scheduleAhead: 0.1,
+    nextNoteTime: 0,
+    timerID: null,
+    pattern: {},
+    instruments: [
+      { id: "bd", name: "Bass Drum", file: "bd.wav", volume: 0.9 },
+      { id: "sd", name: "Snare", file: "sd.wav", volume: 0.8 },
+      { id: "lt", name: "Low Tom", file: "lt.wav", volume: 0.8 },
+      { id: "mt", name: "Mid Tom", file: "mt.wav", volume: 0.8 },
+      { id: "ht", name: "High Tom", file: "ht.wav", volume: 0.8 },
+      { id: "rs", name: "Rimshot", file: "rim.wav", volume: 0.7 },
+      { id: "cp", name: "Clap", file: "clap.wav", volume: 0.7 },
+      { id: "ch", name: "Closed Hat", file: "ch.wav", volume: 0.7 },
+      { id: "oh", name: "Open Hat", file: "oh.wav", volume: 0.7 },
+      { id: "cy", name: "Cymbal", file: "cym.wav", volume: 0.7 },
+      { id: "cb", name: "Cowbell", file: "cow.wav", volume: 0.7 },
+    ],
+    buffers: {},
+    gains: {},
+    mutes: {},
+    solos: {},
+    playingSources: {}, // {instId: Set<AudioBufferSourceNode>}
+  };
+
+  function ensureAudio() {
+    if (!drumCtx) {
+      drumCtx = new (window.AudioContext || window.webkitAudioContext)();
+      drumMaster = drumCtx.createGain();
+      drumMaster.gain.value = 0.9;
+      drumMaster.connect(drumCtx.destination);
+    }
+  }
+
+  async function loadSample(file) {
+    const base = import.meta && import.meta.env && import.meta.env.BASE_URL ? import.meta.env.BASE_URL : "/";
+    const url = `${base}samples/808/${file}`;
+    const res = await fetch(url);
+    const arr = await res.arrayBuffer();
+    return new Promise((resolve, reject) => {
+      drumCtx.decodeAudioData(arr, resolve, reject);
+    });
+  }
+
+  async function loadAllSamples() {
+    ensureAudio();
+    const loads = drumState.instruments.map(async (inst) => {
+      const buf = await loadSample(inst.file).catch(() => null);
+      drumState.buffers[inst.id] = buf;
+    });
+    await Promise.all(loads);
+  }
+
+  function buildPattern() {
+    const saved = localStorage.getItem("drum808_pattern_v1");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.steps && parsed.pattern) {
+          drumState.steps = parsed.steps;
+          drumState.pattern = parsed.pattern;
+          return;
+        }
+      } catch {}
+    }
+    drumState.instruments.forEach((inst) => {
+      drumState.pattern[inst.id] = Array.from({ length: drumState.steps }, () => ({ on: false, accent: false }));
+    });
+  }
+
+  function savePattern() {
+    const payload = { steps: drumState.steps, pattern: drumState.pattern };
+    localStorage.setItem("drum808_pattern_v1", JSON.stringify(payload));
+  }
+
+  function scheduleNote(instId, time, velocity = 1) {
+    const buffer = drumState.buffers[instId];
+    if (!buffer) {
+      const osc = drumCtx.createOscillator();
+      const gain = drumCtx.createGain();
+      osc.type = "triangle";
+      osc.frequency.value = 220;
+      gain.gain.setValueAtTime(0.0, time);
+      gain.gain.linearRampToValueAtTime(0.2 * velocity, time + 0.005);
+      gain.gain.linearRampToValueAtTime(0.0, time + 0.08);
+      osc.connect(gain).connect(drumMaster);
+      osc.start(time);
+      osc.stop(time + 0.09);
+      return;
+    }
+
+    const src = drumCtx.createBufferSource();
+    src.buffer = buffer;
+
+    const g = drumState.gains[instId] || drumCtx.createGain();
+    if (!drumState.gains[instId]) {
+      g.gain.value = drumState.instruments.find((x) => x.id === instId)?.volume ?? 0.8;
+      g.connect(drumMaster);
+      drumState.gains[instId] = g;
+    }
+
+    const isMuted = !!drumState.mutes[instId];
+    const anySolo = Object.values(drumState.solos).some(Boolean);
+    const soloed = anySolo ? !!drumState.solos[instId] : true;
+    const finalGain = isMuted || !soloed ? 0 : 1;
+
+    const hitGain = drumCtx.createGain();
+    hitGain.gain.value = finalGain * velocity;
+
+    src.connect(hitGain).connect(g);
+
+    // Hi-hat choke: a Closed Hat cuts any Open Hat currently ringing
+    try {
+      if (instId === "ch" && drumState.playingSources["oh"]) {
+        drumState.playingSources["oh"].forEach((node) => {
+          try {
+            node.stop(time);
+          } catch {}
+        });
+      }
+    } catch {}
+
+    // Track active sources per instrument for choke/cleanup
+    if (!drumState.playingSources[instId]) {
+      drumState.playingSources[instId] = new Set();
+    }
+    drumState.playingSources[instId].add(src);
+    src.onended = () => {
+      try {
+        drumState.playingSources[instId]?.delete(src);
+      } catch {}
+    };
+
+    src.start(time);
+  }
+
+  function nextStepTimeInterval() {
+    const sixteenth = 60.0 / drumState.bpm / 4;
+    const isEven = (drumState.currentStep + 1) % 2 === 0;
+    const swingDelay = isEven ? sixteenth * drumState.swing : 0;
+    return sixteenth + swingDelay;
+  }
+
+  function scheduleAhead() {
+    while (drumState.nextNoteTime < drumCtx.currentTime + drumState.scheduleAhead) {
+      const step = drumState.currentStep;
+      const anySolo = Object.values(drumState.solos).some(Boolean);
+
+      drumState.instruments.forEach((inst) => {
+        const cell = drumState.pattern[inst.id]?.[step];
+        if (!cell || !cell.on) return;
+        if (anySolo && !drumState.solos[inst.id]) return;
+        const velocity = cell.accent ? 1.0 : 0.8;
+        scheduleNote(inst.id, drumState.nextNoteTime, velocity);
+      });
+
+      updatePlayhead(step);
+      const interval = nextStepTimeInterval();
+      drumState.nextNoteTime += interval;
+      drumState.currentStep = (drumState.currentStep + 1) % drumState.steps;
+    }
+  }
+
+  function updatePlayhead(step) {
+    const grid = document.querySelector(".drum__grid");
+    if (!grid) return;
+    grid.querySelectorAll(".drum__step").forEach((b, idx) => {
+      b.classList.toggle("is-playing", idx % drumState.steps === step);
+    });
+  }
+
+  function start() {
+    ensureAudio();
+    drumCtx.resume();
+    if (drumState.isPlaying) return;
+    drumState.isPlaying = true;
+    drumState.currentStep = 0;
+    drumState.nextNoteTime = drumCtx.currentTime + 0.06;
+    drumState.timerID = setInterval(scheduleAhead, drumState.lookahead * 1000);
+    document.body.classList.add("body--audio-playing");
+  }
+
+  function stop() {
+    if (!drumState.isPlaying) return;
+    drumState.isPlaying = false;
+    clearInterval(drumState.timerID);
+    drumState.timerID = null;
+    updatePlayhead(-1);
+    document.body.classList.remove("body--audio-playing");
+  }
+
+  function toggleCell(instId, step, accentToggle = false) {
+    const cell = drumState.pattern[instId][step];
+    if (accentToggle) {
+      if (cell.on) cell.accent = !cell.accent;
+    } else {
+      cell.on = !cell.on;
+      if (!cell.on) cell.accent = false;
+    }
+    savePattern();
+  }
+
+  function renderDrumUI(root) {
+    const daaw = root.querySelector(".music-daaw");
+    if (daaw) daaw.innerHTML = "";
+
+    const container = document.createElement("div");
+    container.className = "drum";
+
+    const controls = document.createElement("div");
+    controls.className = "drum__controls";
+
+    const bpmWrap = document.createElement("div");
+    bpmWrap.className = "drum__ctrl";
+    bpmWrap.innerHTML = `
+      <label class="drum__label">BPM</label>
+      <input class="drum__bpm" type="range" min="60" max="200" step="1" value="${drumState.bpm}">
+      <input class="drum__bpm-input" type="number" min="60" max="200" step="1" value="${drumState.bpm}">
+    `;
+
+    const swingWrap = document.createElement("div");
+    swingWrap.className = "drum__ctrl";
+    swingWrap.innerHTML = `
+      <label class="drum__label">Swing</label>
+      <input class="drum__swing" type="range" min="0" max="0.6" step="0.01" value="${drumState.swing}">
+    `;
+
+    const patternWrap = document.createElement("div");
+    patternWrap.className = "drum__ctrl";
+    patternWrap.innerHTML = `
+      <label class="drum__label">Pas</label>
+      <select class="drum__steps">
+        <option value="16" ${drumState.steps === 16 ? "selected" : ""}>16</option>
+        <option value="8" ${drumState.steps === 8 ? "selected" : ""}>8</option>
+      </select>
+    `;
+
+    const miscWrap = document.createElement("div");
+    miscWrap.className = "drum__ctrl";
+    miscWrap.innerHTML = `
+      <button class="drum__save">Sauver</button>
+      <button class="drum__clear">Clear</button>
+    `;
+
+    // Presets
+    const presetWrap = document.createElement("div");
+    presetWrap.className = "drum__ctrl";
+    presetWrap.innerHTML = `
+      <label class="drum__label">Preset</label>
+      <select class="drum__preset">
+        <option value="none">---</option>
+        <option value="four">Four on the Floor</option>
+        <option value="electro">Electro 808</option>
+        <option value="boomBap">Boom Bap</option>
+      </select>
+      <button class="drum__preset-load">Load</button>
+    `;
+
+    controls.append(bpmWrap, swingWrap, patternWrap, miscWrap, presetWrap);
+
+    const grid = document.createElement("div");
+    grid.className = "drum__grid";
+
+    drumState.instruments.forEach((inst) => {
+      const row = document.createElement("div");
+      row.className = "drum__row";
+
+      const head = document.createElement("div");
+      head.className = "drum__row-head";
+      head.innerHTML = `
+        <span class="drum__inst">${inst.name}</span>
+        <button class="drum__btn drum__btn--mute" data-inst="${inst.id}" title="Mute">M</button>
+        <button class="drum__btn drum__btn--solo" data-inst="${inst.id}" title="Solo">S</button>
+        <input class="drum__vol" type="range" min="0" max="1" step="0.01" value="${inst.volume}" data-inst="${inst.id}">
+      `;
+
+      const stepsWrap = document.createElement("div");
+      stepsWrap.className = "drum__steps-wrap";
+      for (let s = 0; s < drumState.steps; s++) {
+        const btn = document.createElement("button");
+        btn.className = "drum__step";
+        btn.dataset.inst = inst.id;
+        btn.dataset.step = String(s);
+        if (drumState.pattern[inst.id][s].on) btn.classList.add("is-active");
+        if (drumState.pattern[inst.id][s].accent) btn.classList.add("is-accent");
+        if (s % 4 === 0) btn.classList.add("is-beat");
+        btn.addEventListener("click", () => {
+          toggleCell(inst.id, s, false);
+          btn.classList.toggle("is-active");
+          btn.classList.remove("is-accent");
+        });
+        btn.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          toggleCell(inst.id, s, true);
+          if (drumState.pattern[inst.id][s].on) {
+            btn.classList.toggle("is-accent");
+          }
+        });
+        stepsWrap.appendChild(btn);
+      }
+
+      row.appendChild(head);
+      row.appendChild(stepsWrap);
+      grid.appendChild(row);
+    });
+
+    container.appendChild(controls);
+    container.appendChild(grid);
+    daaw?.appendChild(container);
+
+    const bpmRange = container.querySelector(".drum__bpm");
+    const bpmInput = container.querySelector(".drum__bpm-input");
+    const swingInput = container.querySelector(".drum__swing");
+    const stepsSelect = container.querySelector(".drum__steps");
+    const saveBtn = container.querySelector(".drum__save");
+    const clearBtn = container.querySelector(".drum__clear");
+    const presetSelect = container.querySelector(".drum__preset");
+    const presetLoad = container.querySelector(".drum__preset-load");
+
+    bpmRange.addEventListener("input", () => {
+      drumState.bpm = parseInt(bpmRange.value, 10);
+      bpmInput.value = drumState.bpm;
+    });
+    bpmInput.addEventListener("change", () => {
+      drumState.bpm = Math.min(200, Math.max(60, parseInt(bpmInput.value || "120", 10)));
+      bpmRange.value = drumState.bpm;
+    });
+    swingInput.addEventListener("input", () => {
+      drumState.swing = parseFloat(swingInput.value);
+    });
+    stepsSelect.addEventListener("change", () => {
+      const s = parseInt(stepsSelect.value, 10);
+      drumState.steps = s;
+      Object.keys(drumState.pattern).forEach((k) => {
+        const old = drumState.pattern[k];
+        const next = Array.from({ length: s }, (_, i) => old?.[i] ?? { on: false, accent: false });
+        drumState.pattern[k] = next;
+      });
+      savePattern();
+      renderDrumUI(root);
+    });
+
+    saveBtn.addEventListener("click", () => savePattern());
+    clearBtn.addEventListener("click", () => {
+      Object.keys(drumState.pattern).forEach((k) => {
+        drumState.pattern[k] = Array.from({ length: drumState.steps }, () => ({ on: false, accent: false }));
+      });
+      savePattern();
+      renderDrumUI(root);
+    });
+
+    presetLoad.addEventListener("click", () => {
+      const name = presetSelect.value;
+      if (!name || name === "none") return;
+      applyPreset(name);
+      savePattern();
+      renderDrumUI(root);
+    });
+
+    container.querySelectorAll(".drum__vol").forEach((vol) => {
+      vol.addEventListener("input", () => {
+        const instId = vol.dataset.inst;
+        const g = drumState.gains[instId] || drumCtx?.createGain();
+        if (!drumState.gains[instId] && g) {
+          g.connect(drumMaster);
+          drumState.gains[instId] = g;
+        }
+        if (g) g.gain.value = parseFloat(vol.value);
+      });
+    });
+
+    container.querySelectorAll(".drum__btn--mute").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.inst;
+        drumState.mutes[id] = !drumState.mutes[id];
+        btn.classList.toggle("is-active", !!drumState.mutes[id]);
+      });
+    });
+
+    container.querySelectorAll(".drum__btn--solo").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.inst;
+        drumState.solos[id] = !drumState.solos[id];
+        btn.classList.toggle("is-active", !!drumState.solos[id]);
+      });
+    });
+
+    const playBtn = root.querySelector(".music__controls-button--play");
+    const stopBtn = root.querySelector(".music__controls-button--stop");
+    if (playBtn) playBtn.onclick = () => start();
+    if (stopBtn) stopBtn.onclick = () => stop();
+  }
+
+  async function initDrumMachine(windowEl) {
+    const root = windowEl.querySelector(".window__content--music");
+    if (!root || root.dataset.drumInit === "true") return;
+    root.dataset.drumInit = "true";
+
+    buildPattern();
+    ensureAudio();
+    await loadAllSamples();
+    renderDrumUI(root);
+  }
+  // === End Drum Machine ===
+
+  // Presets utilities (after End marker to keep grouping simple)
+  function stepsFrom(str) {
+    // str length should be 16; 'x' = on, 'X' = accent, '.' = off
+    const arr = [];
+    const len = Math.min(str.length, drumState.steps);
+    for (let i = 0; i < drumState.steps; i++) {
+      if (i < len) {
+        const c = str[i];
+        arr.push({ on: c === "x" || c === "X", accent: c === "X" });
+      } else {
+        arr.push({ on: false, accent: false });
+      }
+    }
+    return arr;
+  }
+
+  function applyPreset(name) {
+    const p = {};
+    switch (name) {
+      case "four": // 4-on-the-floor house style
+        drumState.bpm = 124;
+        p.bd = stepsFrom("x...x...x...x...");
+        p.sd = stepsFrom("....x.......x...");
+        p.cp = stepsFrom("....x.......x...");
+        p.ch = stepsFrom("x.x.x.x.x.x.x.x.");
+        p.oh = stepsFrom("....x.......x...");
+        break;
+      case "electro": // classic 808 electro
+        drumState.bpm = 112;
+        p.bd = stepsFrom("x...x...x..x....");
+        p.sd = stepsFrom("....x.......x...");
+        p.cp = stepsFrom("........x.......");
+        p.ch = stepsFrom("x.xxx.x.xxx.x.x.");
+        p.oh = stepsFrom("........x.......");
+        p.cb = stepsFrom("....x...........");
+        break;
+      case "boomBap": // 90s boom bap flavor
+        drumState.bpm = 92;
+        p.bd = stepsFrom("x.......x.......");
+        p.sd = stepsFrom("....x.......x...");
+        p.cp = stepsFrom("........x.......");
+        p.ch = stepsFrom("x.x.x.x.x.x.x.x.");
+        break;
+      default:
+        return;
+    }
+
+    // apply over existing pattern, clear unspecified rows
+    Object.keys(drumState.pattern).forEach((k) => {
+      if (p[k]) {
+        drumState.pattern[k] = p[k];
+      } else {
+        drumState.pattern[k] = Array.from({ length: drumState.steps }, () => ({ on: false, accent: false }));
+      }
+    });
+  }
+
   const openWindow = async (id = null, width = 480, height = 320, url = "", reload = false) => {
     const windowEl = windows[id].el;
     if (windows[id].isOpen) {
       focusWindow(windowEl);
       windowEl.classList.remove("window--minimized");
       windowEl.classList.add("window--visible");
+      if (id === "window-browser" && url) {
+        const iframe = windowEl.querySelector(".window__content-iframe");
+        if (reload || iframe.getAttribute("src") !== url) {
+          iframe.setAttribute("src", url);
+        }
+        const browserAction = document.querySelector(".taskbar__action--browser");
+        if (browserAction) browserAction.classList.remove("taskbar__action--hidden");
+      }
       return;
     }
 
@@ -616,16 +949,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (id === "window-music" && !windows[id].isOpen) {
-      // windowContent.querySelector(".window__content-video").play();
+      try {
+        initDrumMachine(windowEl);
+      } catch (e) {
+        console.error("Drum machine init error", e);
+      }
     }
 
-    if ((id === "window-browser" && reload) || (id === "window-browser" && !windows[id].isOpen)) {
-      console.log(!windows[id].isOpen);
+    if (id === "window-browser") {
+      const iframe = windowContent.querySelector(".window__content-iframe");
       if (!windows[id].isOpen) {
         setTimeout(() => {
-          windowContent.querySelector(".window__content-iframe").setAttribute("src", url);
+          iframe.setAttribute("src", url);
         }, 500);
-        document.querySelector(".taskbar__action--browser").classList.remove("taskbar__action--hidden");
+        const browserAction = document.querySelector(".taskbar__action--browser");
+        if (browserAction) browserAction.classList.remove("taskbar__action--hidden");
+      } else if (reload && url) {
+        iframe.setAttribute("src", url);
+      }
+    }
+
+    if (id === "window-snake" && !windows[id].isOpen) {
+      try {
+        initSnake(windowEl);
+      } catch (e) {
+        console.error("Snake init error", e);
       }
     }
 
@@ -711,10 +1059,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             }, 500);
           }
         }
+
         if (id === "window-browser") {
           windowEl.querySelector(".window__content-iframe").setAttribute("src", "");
           document.querySelector(".taskbar__action--browser").classList.add("taskbar__action--hidden");
         }
+
         if (id === "window-chat") {
           windowEl.querySelector(".chat__list").innerHTML = "";
         }
@@ -978,16 +1328,16 @@ document.addEventListener("DOMContentLoaded", async () => {
               openWindow("window-chat", 660, 320);
               break;
             case "music":
-              openWindow("window-music", 660, 418);
+              openWindow("window-music", 980, 502);
               break;
             case "game":
-              openWindow("window-game", "max", "max");
+              openWindow("window-game", 660, 320);
               break;
             case "terminal":
               openWindow("window-terminal");
               break;
             case "paint":
-              openWindow("window-paint", 820, 610);
+              openWindow("window-paint", isMobile ? "max" : 820, isMobile ? "max" : 610);
               break;
             case "github":
             case "codepen":
@@ -1037,9 +1387,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
   }
+  // Screensaver module
+  initScreensaver();
 });
 
 window.addEventListener("error", (e) => {
+  if (e.message && /ResizeObserver loop (limit exceeded|completed with undelivered notifications)/i.test(e.message)) return;
   console.error("Erreur JS non capturée :", e.message, e.filename, e.lineno);
 });
 
@@ -1047,68 +1400,7 @@ window.addEventListener("unhandledrejection", (e) => {
   console.error("Promesse rejetée sans catch :", e.reason);
 });
 
-let screensaverActive = false;
-let screensaverTimeout;
-
-function moveHelloWorld() {
-  const el = document.querySelector(".screensaver p");
-  const parent = document.querySelector(".screensaver");
-
-  const maxX = parent.clientWidth - el.offsetWidth;
-  const maxY = parent.clientHeight - el.offsetHeight;
-
-  let x = Math.random() * maxX;
-  let y = Math.random() * maxY;
-  let vx = 0.75;
-  let vy = 0.75;
-
-  function animate() {
-    x += vx;
-    y += vy;
-
-    if (x <= 0 || x >= maxX) vx *= -1;
-    if (y <= 0 || y >= maxY) vy *= -1;
-
-    gsap.set(el, { x, y });
-
-    if (screensaverActive) requestAnimationFrame(animate);
-  }
-
-  animate();
-}
-
-function activateScreensaver() {
-  if (screensaverActive) return;
-  screensaverActive = true;
-  const el = document.querySelector(".screensaver");
-  el.style.display = "block";
-  gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 1 });
-  moveHelloWorld();
-}
-
-function deactivateScreensaver() {
-  if (!screensaverActive) return;
-  screensaverActive = false;
-  const el = document.querySelector(".screensaver");
-  gsap.to(el, {
-    opacity: 0,
-    duration: 1,
-    onComplete: () => {
-      el.style.display = "none";
-    },
-  });
-}
-
-function resetScreensaverTimer() {
-  clearTimeout(screensaverTimeout);
-  if (screensaverActive) deactivateScreensaver();
-  screensaverTimeout = setTimeout(activateScreensaver, 5 * 60 * 1000); // display au bout de 5min
-}
-
-["mousemove", "keydown", "mousedown", "touchstart"].forEach((evt) => {
-  document.addEventListener(evt, resetScreensaverTimer, { passive: true });
-});
-resetScreensaverTimer();
+// screensaver moved in module
 
 function changePP() {
   const ppEl = document.querySelector(".window__content-header-pp");
@@ -1133,7 +1425,7 @@ function changePP() {
     src = "profil_04.svg";
   }
 
-  ppEl.setAttribute("src", `src/images/${src}`);
+  ppEl.setAttribute("src", `./images/${src}`);
 }
 
 changePP();

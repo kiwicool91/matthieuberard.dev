@@ -473,11 +473,6 @@ button {
     opacity var(--default_transition);
 }
 
-#window-game {
-  min-width: 100dvw;
-  min-height: calc(100dvh - var(--spacer_54));
-}
-
 .window--visible {
   opacity: 1;
   visibility: visible;
@@ -1173,6 +1168,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--spacer_8);
+  height: 100%;
 }
 
 .paint__toolbar {
@@ -1221,6 +1217,12 @@ button {
 }
 
 .paint__canvas {
+  width: 100%;
+  height: auto; /* avoid stretching to parent height */
+  max-height: 100%;
+  flex: 1 1 auto; /* grow to fill remaining space below toolbar */
+  display: block;
+  touch-action: none;
   box-shadow: inset 0 0 0 2px var(--black_stroke);
 }
 
@@ -1246,6 +1248,116 @@ button {
 #minecraft-game {
   appearance: none;
   border: 0;
+}
+
+.game__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacer_16);
+  width: 100%;
+  max-height: 100%;
+}
+
+.game__link {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacer_8);
+  padding: var(--spacer_12) var(--spacer_16);
+  transition: background-color var(--default_transition);
+}
+
+.game__link:hover {
+  background-color: var(--hover_background_color);
+}
+
+.game__link-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+.game__link-icon .text-color {
+  fill: var(--text_color);
+  transition: fill var(--default_transition);
+}
+.game__link-icon .background-color {
+  fill: var(--background_color);
+  transition: fill var(--default_transition);
+}
+.game__link-icon .background-color--stroke {
+  fill: none;
+  stroke: var(--background_color);
+  transition: stroke var(--default_transition);
+}
+
+.game__link-text {
+  font-size: var(--font_size_12);
+  text-align: center;
+  color: var(--text_color);
+  transition: color var(--default_transition);
+}
+
+.game__link-tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--background_color);
+  color: var(--text_color);
+  padding: var(--spacer_6) var(--spacer_8);
+  border-radius: var(--border_radius_4);
+  font-size: var(--font_size_12);
+  width: auto;
+  max-width: 18rem;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: inset 0 0 0 2px var(--text_color);
+  transition:
+    color var(--default_transition),
+    background-color var(--default_transition),
+    box-shadow var(--default_transition);
+}
+.game__link-tooltip--visible {
+  opacity: 1;
+}
+
+/* Snake */
+.snake {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+.snake__canvas {
+  background: var(--background_color);
+  box-shadow: inset 0 0 0 2px var(--text_color);
+  image-rendering: pixelated;
+}
+.snake__hud {
+  position: absolute;
+  top: var(--spacer_8);
+  left: var(--spacer_8);
+  background: rgba(0,0,0,0.25);
+  color: var(--text_color);
+  padding: 2px 6px;
+  border-radius: var(--border_radius_4);
+  font-size: var(--font_size_12);
+}
+.snake__help {
+  position: absolute;
+  bottom: var(--spacer_8);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.25);
+  color: var(--text_color);
+  padding: 4px 8px;
+  border-radius: var(--border_radius_4);
+  font-size: var(--font_size_12);
+  text-align: center;
 }
 
 /* contextual menu */
@@ -1371,4 +1483,106 @@ button {
   margin-bottom: 0;
   font-size: 8rem;
   font-weight: var(--font_weight_700);
+}
+
+.music__controls-button {
+  appearance: none;
+  padding: 0;
+  background-color: transparent;
+  border: 0;
+  color: var(--text_color);
+}
+
+/* Drum machine (TR-808-like) */
+.drum {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.drum__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.drum__ctrl {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.drum__label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.drum__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.drum__row {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+.drum__row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.drum__inst {
+  min-width: 120px;
+  font-weight: 600;
+}
+.drum__btn {
+  padding: 2px 6px;
+  font-size: 12px;
+  border: 1px solid var(--border_color, #444);
+  background: transparent;
+  color: var(--text_color);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.drum__btn.is-active {
+  background: var(--text_color);
+  color: var(--black_background, #000);
+}
+.drum__vol {
+  width: 90px;
+}
+.drum__steps-wrap {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(18px, 1fr));
+  gap: 4px;
+}
+.drum__step {
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid var(--border_color, #333);
+  background: #1b1b1b;
+  cursor: pointer;
+  position: relative;
+}
+.body--light .drum__step {
+  background: #f1f1f1;
+  border-color: #cfcfcf;
+}
+.drum__step.is-beat {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.drum__step.is-active {
+  background: #ff6a00;
+  border-color: #ff6a00;
+}
+.drum__step.is-accent {
+  background: #ff9a3c;
+  border-color: #ff9a3c;
+}
+.drum__step.is-playing::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  pointer-events: none;
 }

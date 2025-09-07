@@ -97,6 +97,8 @@
                       <option value="moebius" selected>Moebius</option>
                       <option value="klein">Klein</option>
                       <option value="enneper">Enneper</option>
+                      <option value="torus">Torus</option>
+                      <option value="sphere">Sphere</option>
                     </select>
                   </label>
                 </li> -->
@@ -375,6 +377,19 @@
                     -->
                   </button>
                 </li>
+
+                <li class="ref__item">
+                  <button class="ref__link" data-href="https://youtu.be/Jcq1KhGQ8Ic?t=737" data-target="blank">
+                    <svg class="ref__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="240" height="240" class="text-color" />
+                      <path d="M170 40H70C40 40 20 60 20 90V150C20 180 40 200 70 200H170C200 200 220 180 220 150V90C220 60 200 40 170 40ZM138.9 130.3L114.2 145.1C104.2 151.1 95.9998 146.5 95.9998 134.8V105.1C95.9998 93.4001 104.2 88.8001 114.2 94.8001L138.9 109.6C148.4 115.4 148.4 124.6 138.9 130.3Z" class="background-color" />
+                    </svg>
+
+                    <span class="ref__link-text">YouTube</span>
+                    <span class="ref__link-tooltip">Participation à un challenge de code</span>
+                  </button>
+                </li>
+
                 <li class="ref__item">
                   <button class="ref__link" data-href="https://www.raisonhome.com/fr/" data-target="self">
                     <svg class="ref__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -662,11 +677,11 @@
             </div>
             <div class="window__divider"></div>
             <div class="window__content window__content--music">
-              <div class="music-controls">
-                <button class="music-play">
+              <div class="music__controls">
+                <button class="music__controls-button music__controls-button--play">
                   <svg class="" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><use href="#play"></use></svg>
                 </button>
-                <button class="music-stop">
+                <button class="music__controls-button music__controls-button--stop">
                   <svg class="" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><use href="#stop"></use></svg>
                 </button>
               </div>
@@ -746,7 +761,164 @@
               </div>
             </div>
             <div class="window__divider"></div>
-            <div class="window__content window__content--game"><span>Build in progress</span><span class="processing">...</span></div>
+            <div class="window__content window__content--game">
+              <ul class="game__list semantic-list">
+                <li class="game__item">
+                  <button class="game__link" data-game="snake">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <path class="background-color" d="M40 160h80a20 20 0 0 0 0-40H80a20 20 0 0 1 0-40h80a40 40 0 0 1 0 80h-40" />
+                      <circle cx="160" cy="80" r="8" class="background-color" />
+                    </svg>
+                    <span class="game__link-text">Snake</span>
+                    <span class="game__link-tooltip">Contrôle un serpent qui grandit</span>
+                  </button>
+                </li>
+                <!--                 
+                <li class="game__item">
+                  <button class="game__link" data-game="tetris">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <rect x="40" y="160" width="40" height="40" class="background-color"/>
+                      <rect x="80" y="160" width="40" height="40" class="background-color"/>
+                      <rect x="120" y="160" width="40" height="40" class="background-color"/>
+                      <rect x="120" y="120" width="40" height="40" class="background-color"/>
+                    </svg>
+                    <span class="game__link-text">Tetris</span>
+                    <span class="game__link-tooltip">Empile les pièces</span>
+                  </button>
+                </li>
+                <li class="game__item">
+                  <button class="game__link" data-game="pong">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <rect x="24" y="80" width="12" height="80" class="background-color"/>
+                      <rect x="204" y="80" width="12" height="80" class="background-color"/>
+                      <circle cx="120" cy="120" r="8" class="background-color"/>
+                    </svg>
+                    <span class="game__link-text">Pong</span>
+                    <span class="game__link-tooltip">Renvoie la balle</span>
+                  </button>
+                </li>
+                <li class="game__item">
+                  <button class="game__link" data-game="minesweeper">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <rect x="60" y="60" width="120" height="120" class="background-color" opacity="0.15"/>
+                      <circle cx="120" cy="120" r="10" class="background-color"/>
+                    </svg>
+                    <span class="game__link-text">Démineur</span>
+                    <span class="game__link-tooltip">Trouve les cases sûres</span>
+                  </button>
+                </li>
+                <li class="game__item">
+                  <button class="game__link" data-game="breakout">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <rect x="60" y="160" width="120" height="10" class="background-color"/>
+                      <rect x="60" y="60" width="30" height="12" class="background-color"/>
+                      <rect x="95" y="60" width="30" height="12" class="background-color"/>
+                      <rect x="130" y="60" width="30" height="12" class="background-color"/>
+                      <circle cx="120" cy="140" r="6" class="background-color"/>
+                    </svg>
+                    <span class="game__link-text">Breakout</span>
+                    <span class="game__link-tooltip">Casse les briques</span>
+                  </button>
+                </li>
+                <li class="game__item">
+                  <button class="game__link" data-game="2048">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <rect x="80" y="80" width="80" height="80" class="background-color"/>
+                      <text x="120" y="132" text-anchor="middle" font-size="36" fill="currentColor">2</text>
+                    </svg>
+                    <span class="game__link-text">2048</span>
+                    <span class="game__link-tooltip">Fusionne les tuiles</span>
+                  </button>
+                </li>
+                <li class="game__item">
+                  <button class="game__link" data-game="flappy">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <circle cx="96" cy="120" r="12" class="background-color"/>
+                      <rect x="156" y="0" width="24" height="80" class="background-color"/>
+                      <rect x="156" y="160" width="24" height="80" class="background-color"/>
+                    </svg>
+                    <span class="game__link-text">Flappy</span>
+                    <span class="game__link-tooltip">Passe entre les tuyaux</span>
+                  </button>
+                </li>
+                <li class="game__item">
+                  <button class="game__link" data-game="tictactoe">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <path d="M80 40v160M160 40v160M40 80h160M40 160h160" stroke="currentColor" stroke-width="10"/>
+                    </svg>
+                    <span class="game__link-text">Morpion</span>
+                    <span class="game__link-tooltip">Aligne 3 symboles</span>
+                  </button>
+                </li>
+                <li class="game__item">
+                  <button class="game__link" data-game="simon">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <circle cx="120" cy="120" r="72" class="background-color" opacity="0.15"/>
+                      <circle cx="120" cy="120" r="16" class="background-color"/>
+                    </svg>
+                    <span class="game__link-text">Simon</span>
+                    <span class="game__link-tooltip">Mémorise la séquence</span>
+                  </button>
+                </li>
+                <li class="game__item">
+                  <button class="game__link" data-game="asteroids">
+                    <svg class="game__link-icon" width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect class="text-color" width="240" height="240" fill="white" />
+                      <polygon points="120,70 136,100 120,130 104,100" class="background-color"/>
+                      <circle cx="80" cy="80" r="6" class="background-color"/>
+                      <circle cx="180" cy="160" r="8" class="background-color"/>
+                    </svg>
+                    <span class="game__link-text">Asteroids</span>
+                    <span class="game__link-tooltip">Évite et détruis</span>
+                  </button>
+                </li> -->
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="window" id="window-snake">
+          <div class="window__container">
+            <div class="window__header">
+              <svg class="window__header-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <use href="#game"></use>
+              </svg>
+              <span class="window__title">Snake</span>
+              <div class="window__actions">
+                <button class="window__action window__action--close">
+                  <svg class="window__action-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <use href="#circle_cross"></use>
+                  </svg>
+                </button>
+                <button class="window__action window__action--minimize">
+                  <svg class="window__action-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <use href="#circle_minimize"></use>
+                  </svg>
+                </button>
+                <button class="window__action window__action--maximize">
+                  <svg class="window__action-icon" width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <use href="#circle_maximize"></use>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="window__divider"></div>
+            <div class="window__content window__content--snake">
+              <div class="snake">
+                <canvas class="snake__canvas" width="400" height="400"></canvas>
+                <div class="snake__hud">Score: <span class="snake__score">0</span></div>
+                <div class="snake__help">Flèches / ZQSD: déplacer — Espace/Entrée: démarrer/pause — R: restart</div>
+              </div>
+            </div>
           </div>
         </div>
 

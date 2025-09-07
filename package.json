@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "generate:808": "node scripts/generate-808.js"
   },
   "homepage": "https://kiwicool91.github.io/matthieuberard.dev/",
   "devDependencies": {
