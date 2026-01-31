@@ -22,6 +22,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   const taskBarTimerEl = taskBar.querySelector(".taskbar__timer");
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const isWebGPUSupported = !!navigator.gpu;
+  const headTitle = document.querySelector("head title");
+
+  if (headTitle) {
+    const text = "Hello World";
+    const cfg = { eraseMs: 150, typeMs: 150, blinkMs: 750, cursor: "▌" };
+
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    const setText = (value) => {
+      headTitle.textContent = value;
+    };
+
+    async function eraseTitle() {
+      while (headTitle.textContent.length > 0) {
+        setText(headTitle.textContent.slice(0, -1));
+        await sleep(cfg.eraseMs);
+      }
+    }
+
+    async function typeTitle() {
+      for (let i = 1; i <= text.length; i += 1) {
+        setText(text.slice(0, i));
+        await sleep(cfg.typeMs);
+      }
+    }
+
+    function startBlink() {
+      return setInterval(() => {
+        const hasCursor = headTitle.textContent.endsWith(cfg.cursor);
+        setText(hasCursor ? headTitle.textContent.slice(0, -1) : headTitle.textContent + cfg.cursor);
+      }, cfg.blinkMs);
+    }
+
+    (async () => {
+      await eraseTitle();
+      await typeTitle();
+      startBlink();
+    })();
+  }
 
   const windows = {};
   const windowElems = document.querySelectorAll(".window");
@@ -49,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
     // const model = "Phi-3.5-mini-instruct-q4f16_1-MLC";
-    const model = "Mistral-7B-Instruct-v0.3-q4f16_1-MLC";
+    const model = "Hermes-2-Pro-Mistral-7B-q4f16_1-MLC";
     await engine.reload(model);
 
     chatInstance = engine;
@@ -204,7 +243,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       } catch {}
       // console.log("isLightMode", isLightMode);
     },
-    false
+    false,
   );
 
   const ambiantSoundEl = document.querySelector("#ambiant-sound");
@@ -233,7 +272,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       // console.log("isAmbiantSoundPlaying", isAmbiantSoundPlaying);
     },
-    false
+    false,
   );
 
   // Background shape select is handled inside background3d module
@@ -1350,7 +1389,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
           button.blur();
         },
-        false
+        false,
       );
     });
   }
